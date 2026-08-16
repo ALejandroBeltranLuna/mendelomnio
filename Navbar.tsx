@@ -1,262 +1,149 @@
-/**
- * Synthesizer Audio Engine for The Elementbeasts
- * Provides crisp, futuristic sound effects using Web Audio API without external assets.
- */
+import React from 'react';
+import { Camera, BookOpen, FlaskConical, Volume2, VolumeX, Shield, Atom, Layers } from 'lucide-react';
 
-class SoundEngine {
-  private ctx: AudioContext | null = null;
-
-  private getContext(): AudioContext | null {
-    if (typeof window === 'undefined') return null;
-    if (!this.ctx) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (AudioCtx) {
-        this.ctx = new AudioCtx();
-      }
-    }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
-    return this.ctx;
-  }
-
-  // Scanner pulsing radar beep
-  playScanBeep(freq = 600, duration = 0.08) {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, ctx.currentTime + duration);
-
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + duration);
-    } catch {
-      // Audio fallback
-    }
-  }
-
-  // 3-second Lock-On Success Chime
-  playLockSuccess() {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    try {
-      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-      notes.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
-
-        gain.gain.setValueAtTime(0, ctx.currentTime + idx * 0.08);
-        gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + idx * 0.08 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.08 + 0.35);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.08);
-        osc.stop(ctx.currentTime + idx * 0.08 + 0.35);
-      });
-    } catch {
-      // Audio fallback
-    }
-  }
-
-  // Combat Ring Transition Woosh
-  playCombatTransition() {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(150, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.4);
-
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.5);
-    } catch {
-      // Audio fallback
-    }
-  }
-
-  // Elemental Attack Hit / Impact
-  playAttackHit(type: 'effective' | 'absorbed' | 'recoil' | 'laser' = 'effective') {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    try {
-      if (type === 'laser') {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(1200, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.2);
-
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.2);
-      } else if (type === 'recoil') {
-        // Metallic clank / recoil
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(180, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.3);
-
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.3);
-      } else {
-        // Punchy explosion / strike
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(type === 'effective' ? 320 : 200, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.25);
-
-        gain.gain.setValueAtTime(0.25, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.25);
-      }
-    } catch {
-      // Audio fallback
-    }
-  }
-
-  // Chemical Synthesis reaction sound
-  playSynthesisWoosh() {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    try {
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(300, ctx.currentTime);
-      osc1.frequency.linearRampToValueAtTime(900, ctx.currentTime + 0.35);
-
-      osc2.type = 'sawtooth';
-      osc2.frequency.setValueAtTime(450, ctx.currentTime);
-      osc2.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.35);
-
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-
-      osc1.connect(gain);
-      osc2.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc1.start();
-      osc2.start();
-      osc1.stop(ctx.currentTime + 0.4);
-      osc2.stop(ctx.currentTime + 0.4);
-    } catch {
-      // Audio fallback
-    }
-  }
-
-  // Defeat / Error buzz
-  playDefeat() {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(220, ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(110, ctx.currentTime + 0.3);
-
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
-    } catch {
-      // Audio fallback
-    }
-  }
-
-  // Coin Collect Chime
-  playCoinCollect() {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(987.77, ctx.currentTime); // B5
-      osc.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.08); // E6
-
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.25);
-    } catch {
-      // Audio fallback
-    }
-  }
-
-  // Victory Jingle
-  playVictory() {
-    const ctx = this.getContext();
-    if (!ctx) return;
-    try {
-      const melody = [
-        { f: 523.25, d: 0.12 }, // C5
-        { f: 659.25, d: 0.12 }, // E5
-        { f: 783.99, d: 0.12 }, // G5
-        { f: 1046.5, d: 0.35 }, // C6
-      ];
-      let t = ctx.currentTime;
-      melody.forEach(note => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(note.f, t);
-
-        gain.gain.setValueAtTime(0.15, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + note.d);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(t);
-        osc.stop(t + note.d);
-        t += note.d + 0.03;
-      });
-    } catch {
-      // Audio fallback
-    }
-  }
+interface NavbarProps {
+  activeTab: 'scanner' | 'battle' | 'mendelomnio' | 'lab' | 'lore';
+  setActiveTab: (tab: 'scanner' | 'battle' | 'mendelomnio' | 'lab' | 'lore') => void;
+  unlockedCount: number;
+  totalCount: number;
+  coins: number;
+  soundEnabled: boolean;
+  setSoundEnabled: (val: boolean) => void;
+  inBattle: boolean;
 }
 
-export const sounds = new SoundEngine();
+export const Navbar: React.FC<NavbarProps> = ({
+  activeTab,
+  setActiveTab,
+  unlockedCount,
+  totalCount,
+  coins,
+  soundEnabled,
+  setSoundEnabled,
+  inBattle,
+}) => {
+  return (
+    <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-cyan-500/30 text-white shadow-lg shadow-cyan-950/40">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5">
+        <div className="flex items-center justify-between gap-2">
+          
+          {/* Logo / Brand - Mendelomnio */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-sky-500 to-indigo-500 p-0.5 shadow-md shadow-cyan-500/30">
+              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                <Atom className="w-6 h-6 text-cyan-400 animate-spin" style={{ animationDuration: '14s' }} />
+              </div>
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+              </span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300 text-base sm:text-lg uppercase">
+                  Mendelomnio
+                </span>
+                <span className="px-1.5 py-0.5 text-[10px] font-mono font-semibold uppercase bg-cyan-950 text-cyan-400 border border-cyan-500/40 rounded">
+                  OS v2.4
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 font-mono hidden md:block">
+                Dispositivo Espectral y Registro Universal de Materia
+              </p>
+            </div>
+          </div>
+
+          {/* Right Header: Elements Count, Coins & Sound Toggle */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            
+            {/* Total Tabla Periódica: X/118 */}
+            <div className="flex items-center gap-1.5 bg-cyan-950/60 border border-cyan-500/40 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-mono">
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-slate-300 hidden md:inline">Tabla:</span>
+              <span className="font-extrabold text-cyan-300">{unlockedCount}/{totalCount}</span>
+              <span className="text-slate-400 hidden sm:inline">Registrados</span>
+            </div>
+
+            {/* Coins Counter */}
+            <div 
+              id="header-coins-counter"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-950/70 to-orange-950/70 border border-amber-500/50 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-mono shadow-md shadow-amber-950/40"
+              title="Monedas de Combate para desbloquear personajes en Academia & Lore"
+            >
+              <span className="text-amber-400 text-sm">🪙</span>
+              <span className="font-black text-amber-300">{coins}</span>
+              <span className="text-amber-200/80 font-bold hidden xs:inline">Coins</span>
+            </div>
+
+            {/* Sound Toggle */}
+            <button
+              id="sound-toggle-btn"
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              title={soundEnabled ? "Silenciar audio" : "Activar efectos sonoros"}
+              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-400 transition-colors border border-slate-700 cursor-pointer"
+            >
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-cyan-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Navigation Tabs (Without Battle Ring) */}
+        <nav className="flex items-center justify-between sm:justify-start gap-1 sm:gap-2 mt-2 pt-2 border-t border-slate-800 overflow-x-auto no-scrollbar">
+          
+          <button
+            id="tab-scanner"
+            onClick={() => setActiveTab('scanner')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'scanner' || activeTab === 'battle'
+                ? 'bg-gradient-to-r from-cyan-600 to-sky-600 text-white shadow-md shadow-cyan-600/30'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <Camera className="w-4 h-4 text-cyan-300" />
+            <span>Escáner AR</span>
+          </button>
+
+          <button
+            id="tab-mendelomnio"
+            onClick={() => setActiveTab('mendelomnio')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'mendelomnio'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-purple-600/30'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <BookOpen className="w-4 h-4 text-purple-300" />
+            <span>Mendelomnio</span>
+          </button>
+
+          <button
+            id="tab-lab"
+            onClick={() => setActiveTab('lab')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'lab'
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <FlaskConical className="w-4 h-4 text-emerald-300" />
+            <span>Mesa de Síntesis</span>
+          </button>
+
+          <button
+            id="tab-lore"
+            onClick={() => setActiveTab('lore')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'lore'
+                ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md shadow-amber-600/30'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+            }`}
+          >
+            <Shield className="w-4 h-4 text-amber-300" />
+            <span>Academia & Lore</span>
+          </button>
+
+        </nav>
+      </div>
+    </header>
+  );
+};
