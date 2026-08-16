@@ -1,3 +1,4 @@
+TypeScript
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -11,7 +12,7 @@ import { MendelomnioDex } from './components/MendelomnioDex';
 import { SynthesisLab } from './components/SynthesisLab';
 import { LoreAcademy } from './components/LoreAcademy';
 import { Elementbeast } from './types/elementbeasts';
-import { INITIAL_ELEMENTBEASTS } from './data/database';
+import { INITIAL_ELEMENTBEASTS } from './database';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'scanner' | 'battle' | 'mendelomnio' | 'lab' | 'lore'>('scanner');
