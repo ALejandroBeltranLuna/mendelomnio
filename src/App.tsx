@@ -11,7 +11,7 @@ import { MendelomnioDex } from './components/MendelomnioDex';
 import { SynthesisLab } from './components/SynthesisLab';
 import { LoreAcademy } from './components/LoreAcademy';
 import { Elementbeast } from './types/elementbeasts';
-import { INITIAL_ELEMENTBEASTS } from './database';
+import { INITIAL_ELEMENTBEASTS } from './data/database';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'scanner' | 'battle' | 'mendelomnio' | 'lab' | 'lore'>('scanner');
